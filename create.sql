@@ -66,9 +66,6 @@ CREATE TABLE employee_fluent(
 		REFERENCES employee (CPF) ON DELETE CASCADE,
 );
 
--- checkpoint --
-
-
 CREATE TABLE supervisor(
 	CPF 	char(10),
 	level	integer DEFAULT 0,
@@ -93,23 +90,23 @@ CREATE TABLE supervisor_of(
 CREATE TABLE local_of_equip(
 	e_id 		integer,
 	status		integer DEFAULT 0,
-	local		char(10),
+	local		char(20),
 
 	CONSTRAINT PK_LOCAL_OF_EQUIP primary key (e_id),
 	CONSTRAINT FK_LOCAL_OF_EQUIP_LOCAL foreign key (e_id)
 		REFERENCES equipment (e_id) ON DELETE CASCADE,
 	CONSTRAINT FK_LOCAL_OF_EQUIP_FACILITY foreign key (local)
-		REFERENCES facility (f_name) ON DELETE CASCADE
+		REFERENCES facility (f_name) ON DELETE RESTRICT
 );
 
 CREATE TABLE request(
 	r_id		serial,
 	e_id 		integer,
 	r_status	integer DEFAULT 0,
-	local_in	char(10) NOT NULL,
-	local_out	char(10) NOT NULL,
-	date_in		date NOT NULL,
-	date_out	date NOT NULL,
+	local_in	char(20) NOT NULL,
+	local_out	char(20) NOT NULL,
+	date_in		timestamp without time zone NOT NULL,
+	date_out	timestamp without time zone NOT NULL,
 
 	CONSTRAINT PK_REQUEST primary key (r_id),
 	CONSTRAINT FK_REQ_EQUIP foreign key (e_id)
