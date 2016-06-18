@@ -13,7 +13,7 @@ CREATE TABLE delegation(
 
 CREATE TABLE facility(
 	f_name		char(20),
-	adress 		char(50),
+	address		char(50),
 	capacity	integer,		
 
 	CONSTRAINT PK_FACILITY primary key (f_name)

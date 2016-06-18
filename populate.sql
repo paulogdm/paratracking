@@ -21,10 +21,10 @@ INSERT INTO delegation (d_name, country, email)
 
 -- facility
 
-INSERT INTO facility (f_name, adress, capacity)
+INSERT INTO facility (f_name, address, capacity)
 	VALUES ('central', 'Rua Itapoca 23', 100);
 
-INSERT INTO facility (f_name, adress)
+INSERT INTO facility (f_name, address)
 	VALUES ('airport', 'Airport of Galeao');
 
 INSERT INTO facility (f_name, capacity)
