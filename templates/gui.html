@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title> GUI Paratracking</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+	<link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.deep_orange-blue.min.css"/>
+	<script src="{{ url_for('static',filename='gui.js') }}"></script>
+	<link rel="stylesheet" href="{{ url_for('static',filename='gui.css') }}">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+</head>
+
+<!--  -->
+<body ng-app="flask-paratrack">
+	<main class="mdl-layout__content" ng-controller="MainController">
+		
+		<div class="title mdl-card mdl-shadow--4dp">
+			<div class="mdl-card__supporting-text">
+				<h2 class="mdl-color-text--blue">Paratracking </h2>
+				<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-employee">
+					<span class="mdl-switch__label">Employee Mode</span>
+					<input type="checkbox" ng-model="employee_mode" id="switch-employee" class="mdl-switch__input" checked>
+				</label>
+			</div>
+		</div>
+
+		<div class="mdl-grid">
+			<div class="mini_card mdl-card mdl-cell mdl-shadow--4dp" style="text-align: center">
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">Register Package</span>
+				</div>
+				<div class="mdl-card__actions">
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="pkg_name" pattern="[ a-zA-Z0-9]+" ng-model="pkg_name">
+						<label class="mdl-textfield__label" for="pkg_name" maxlength="20">Name</label>
+					</div>
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="pkg_owner" ng-model="pkg_owner">
+						<label class="mdl-textfield__label" for="pkg_owner" maxlength="20">Delegation owner</label>
+					</div>
+					<div class="mdl-textfield mdl-js-textfield">
+						<textarea class="mdl-textfield__input" type="text" pattern="[ a-zA-Z0-9]+" rows= "4" maxlength="255" id="pkg_desc" ng-model="pkg_desc"></textarea>
+						<label class="mdl-textfield__label" for="pkg_desc">Package Description</label>
+					</div>
+				</div>
+				<div class="mdl-layout-spacer"></div>
+				<div class="mdl-card__actions mdl-card--border">
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="submitPkg()">
+					Save
+					</a>
+				</div>
+			</div>
+
+			<div class="mini_card mdl-card mdl-cell mdl-shadow--4dp" style="text-align: center">
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">Register Delegation</span>
+				</div>
+				<div class="mdl-card__actions">
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="deleg_country" pattern="[A-Z]+" ng-model="deleg_country">
+						<label class="mdl-textfield__label" for="deleg_country" maxlength="3">Country</label>
+					</div>
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="deleg_name" pattern="[ a-zA-Z0-9_]+" ng-value="deleg_country + '_'" ng-model="deleg_name">
+						<label class="mdl-textfield__label" for="deleg_name" maxlength="20">Delegation Name</label>
+					</div>
+					
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="email" id="deleg_email" ng-model="deleg_email">
+						<label class="mdl-textfield__label" for="deleg_email" maxlength="20">Email (optional)</label>
+					</div>
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="deleg_tel" ng-model="deleg_tel" pattern="-?[0-9]*(\.[0-9]+)?">
+						<label class="mdl-textfield__label" for="deleg_tel" maxlength="20">Phone number (optional)</label>
+					</div>
+				</div>
+				<div class="mdl-layout-spacer"></div>
+				<div class="mdl-card__actions mdl-card--border">
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="submitDeleg()">
+						Save
+					</a>
+				</div>
+			</div>
+
+			<div class="mini_card mdl-card mdl-cell mdl-shadow--4dp" style="text-align: center" ng-show="employee_mode">
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">Register Facility</span>
+				</div>
+				<div class="mdl-card__actions">
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="facility_name" pattern="[ a-zA-Z0-9_]+" ng-model="facility_name">
+						<label class="mdl-textfield__label" for="facility_name" maxlength="20">Facility</label>
+					</div>
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="facility_address" pattern="[ a-zA-Z0-9_]+" ng-model="facility_address">
+						<label class="mdl-textfield__label" for="facility_address" maxlength="50">Facility Adress (optional)</label>
+					</div>
+					
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="facility_capacity" pattern="[0-9]+" ng-model="facility_capacity">
+						<label class="mdl-textfield__label" for="facility_capacity" maxlength="20">Capacity (optional)</label>
+					</div>
+				</div>
+				<div class="mdl-layout-spacer"></div>
+				<div class="mdl-card__actions mdl-card--border">
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="submitFacility()">
+						Save
+					</a>
+				</div>
+			</div>
+
+			<div class="mini_card mdl-card mdl-cell mdl-shadow--4dp" style="text-align: center" ng-show="employee_mode">
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">Register Employee</span>
+				</div>
+				<div class="mdl-card__actions">
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="emp_CPF" pattern="[0-9]+" ng-model="emp_CPF">
+						<label class="mdl-textfield__label" for="emp_CPF" maxlength="10">CPF</label>
+					</div>
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="emp_RG" pattern="[0-9]+" ng-model="emp_RG">
+						<label class="mdl-textfield__label" for="emp_RG" maxlength="10">RG</label>
+					</div>
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="emp_name" pattern="[a-zA-Z ]+" ng-model="emp_name">
+						<label class="mdl-textfield__label" for="emp_name" maxlength="20">Name</label>
+					</div>
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="emp_work" pattern="[ a-zA-Z0-9_]+" ng-model="emp_work">
+						<label class="mdl-textfield__label" for="emp_work" maxlength="20">Facility name</label>
+					</div>
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="facility_capacity" pattern="[0-9]+" ng-model="facility_capacity">
+						<label class="mdl-textfield__label" for="facility_capacity" maxlength="20">Capacity (optional)</label>
+					</div>
+				</div>
+				<div class="mdl-layout-spacer"></div>
+				<div class="mdl-card__actions mdl-card--border">
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="submitFacility()">
+						Save
+					</a>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<div id="snackbar-show" class="mdl-js-snackbar mdl-snackbar" style="text-align: center;">
+		<div class="mdl-snackbar__text"></div>
+		<button class="mdl-snackbar__action" type="button"></button>
+	</div>
+
+</body>
+</html>
+

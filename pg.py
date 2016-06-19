@@ -25,9 +25,9 @@ class PostgresLayer(object):
 
 		self.DEBUG_MODE = DEBUG_MODE
 		
-		self.key_args = {} # we could change that to WHERE_REQUIRED_ARGS
-		self.req_args = {} # we could change that to INSERT_REQUIRED_ARGS
-		self.opt_args = {} # we could change that to CAN_BE_NULL_OR_DEFAULT_ARGS
+		self.insert_req_args = {}	# required fields to insert
+		self.insert_ret_args = {}	# fields to return if needed by gui/app
+		self.upsert_opt_args = {}	# optional fields to insert/update
 
 		self.init_dict()
 
@@ -35,50 +35,50 @@ class PostgresLayer(object):
 			self.conn.close()
 
 	def init_dict(self):
+
+		self.insert_req_args['delegation'] = ['d_name', 'country']
+		self.insert_ret_args['delegation'] = []
+		self.upsert_opt_args['delegation'] = ['email', 'tel']
+
+		self.insert_req_args['equipment'] = ['e_name', 'description', 'owner']
+		self.insert_ret_args['equipment'] = ['e_id']
+		self.upsert_opt_args['equipment'] = []
+
+		self.insert_req_args['facility'] = ['f_name']
+		self.insert_ret_args['facility'] = []
+		self.upsert_opt_args['facility'] = ['adress', 'capacity']
+
+		self.insert_req_args['stock'] = ['f_name', 'e_id']
+		self.insert_ret_args['stock'] = []
+		self.upsert_opt_args['stock'] = []
+
+		self.insert_req_args['employee'] = ['CPF', 'RG', 'civil_name', 'work_on', 'password']
+		self.insert_ret_args['employee'] = []
+		self.upsert_opt_args['employee'] = ['is_active']
+
+		self.insert_req_args['employee_fluent'] = ['CPF', 'language']
+		self.insert_ret_args['employee_fluent'] = []
+		self.upsert_opt_args['employee_fluent'] = []
+
+		self.insert_req_args['supervisor'] = ['CPF']
+		self.insert_ret_args['supervisor'] = []
+		self.upsert_opt_args['supervisor'] = ['level']
+
+		self.insert_req_args['supervisor_of'] = ['CPF_sup', 'CPF_emp']
+		self.insert_ret_args['supervisor_of'] = []
+		self.upsert_opt_args['supervisor_of'] = []
 		
-		self.key_args['delegation'] = ['d_name']
-		self.req_args['delegation'] = ['country', 'd_name']
-		self.opt_args['delegation'] = ['email', 'tel']
-
-		self.key_args['equipment'] = ['e_id']
-		self.req_args['equipment'] = ['e_name', 'description', 'owner']
-		self.opt_args['equipment'] = []
-
-		self.key_args['facility'] = ['f_name']
-		self.req_args['facility'] = ['f_name']
-		self.opt_args['facility'] = ['address', 'capacity']
-
-		self.key_args['stock'] = ['f_name', 'e_id']
-		self.req_args['stock'] = ['e_id']
-		self.opt_args['stock'] = []
-
-		self.key_args['employee'] = ['CPF']
-		self.req_args['employee'] = ['CPF', 'RG', 'civil_name', 'work_on', 'password']
-		self.opt_args['employee'] = ['is_active']
-
-		self.key_args['employee_fluent'] = ['CPF', 'language']
-		self.req_args['employee_fluent'] = ['CPF', 'language']
-		self.opt_args['employee_fluent'] = []
+		self.insert_req_args['local_of_equip'] = ['e_id', 'local']
+		self.insert_ret_args['local_of_equip'] = ['status']
+		self.upsert_opt_args['local_of_equip'] = []
 		
-		self.key_args['supervisor'] = ['CPF']
-		self.req_args['stock'] = ['CPF']
-		self.opt_args['stock'] = ['level']
+		self.insert_req_args['request'] = ['e_id', 'local_in', 'local_out', 'date_in', 'date_out']
+		self.insert_ret_args['request'] = ['r_id']
+		self.upsert_opt_args['request'] = []
 
-		self.key_args['supervisor_of'] = ['CPF_sup', 'CPF_emp']
-		self.req_args['supervisor_of'] = ['CPF_sup', 'CPF_emp']
-		self.opt_args['supervisor_of'] = []
-		
-		self.key_args['local_of_equip'] = ['e_id']
-		self.req_args['local_of_equip'] = ['e_id', 'local']
-		self.opt_args['local_of_equip'] = ['status']
-		
-		self.key_args['request'] = ['r_id']
-		self.req_args['request'] = ['e_id', 'local_in', 'local_out', 'date_in', 'date_out']
-		self.opt_args['request'] = []
-
-		self.key_args['service'] = ['s_id']
-		self.req_args['local_of_equip'] = ['r_id', 'employee', 'description']
-		self.opt_args['local_of_equip'] = []
+		self.insert_req_args['service'] = ['r_id', 'employee', 'description']
+		self.insert_ret_args['service'] = ['s_id']
+		self.upsert_opt_args['service'] = []
 
 
 	#################################################
@@ -134,38 +134,41 @@ class PostgresLayer(object):
 	
 	def insert(self, table_target,**kwargs):
 
-		key_args = self.key_args[table_target]
-		req_args = self.req_args[table_target]
-		opt_args = self.opt_args[table_target]
+		insert_req_args = self.insert_req_args[table_target]
+		insert_ret_args = self.insert_ret_args[table_target]
+		upsert_opt_args = self.upsert_opt_args[table_target]
 
-		if not table_target or not key_args:
+		if not table_target or not insert_req_args:
 			return {'success': False, 'err': 'Table doesnt exist'}
 
 		pgquery = "INSERT INTO "+table_target+ " ("
 		values = " ("
+		ret = ""
 
-		for field in req_args:
+		for field in insert_req_args:
 			if field in kwargs and kwargs[field]:
 				pgquery += field + ","
 				values += "'" + kwargs[field] + "',"
 			else:
 				return {'success' : False, 'err': 'Missing input'}
 
-		for field in opt_args:
-			if field in kwargs and kwargs[field]:
-				pgquery += field + ","
-				values += "'" + str(kwargs[field]) + "',"
-
-		for field in key_args:
+		for field in upsert_opt_args:
 			if field in kwargs and kwargs[field]:
 				pgquery += field + ","
 				values += "'" + str(kwargs[field]) + "',"
 		
+		for field in insert_ret_args:
+			ret += field + ","
 
 		pgquery = pgquery[:-1] + ") "
-		values = values[:-1] + ");"
+		values = values[:-1] + ") "
 
 		pgquery = pgquery + " VALUES " + values
+
+		if ret:
+			ret = ret[:-1]
+			pgquery += " RETURNING " + ret +" ;"
+		else : pgquery += ";"
 
 		if self.DEBUG_MODE:
 			print(pgquery)
@@ -174,9 +177,9 @@ class PostgresLayer(object):
 
 	def update(self, table_target,**kwargs):
 
-		key_args = self.key_args[table_target]
-		req_args = self.req_args[table_target]
-		opt_args = self.opt_args[table_target]
+		key_args = {}
+		req_args = {}
+		opt_args = {}
 
 		if not table_target or not key_args:
 			return {'success': False, 'err': 'Table doesnt exist'}
@@ -206,7 +209,7 @@ class PostgresLayer(object):
 
 	def delete(self, **kwargs):
 
-		key_args = self.key_args[table_target]
+		key_args = {}
 		
 		if not table_target or not key_args:
 			return {'success': False, 'err': 'Table doesnt exist'}
@@ -226,7 +229,7 @@ class PostgresLayer(object):
 
 	def select(self, **kwargs):
 
-		key_args = self.key_args[table_target]
+		key_args = {}
 		
 		if not table_target or not key_args:
 			return {'success': False, 'err': 'Table doesnt exist'}
