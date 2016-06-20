@@ -94,8 +94,11 @@ def newLanguage():
 @app.route('/employee/create', methods=['POST'])
 def newEmployee():
 	if request.json:
+		json = request.json
 
-		resp = io.newFacility( json['f_name'], address, capacity)
+		resp = io.newEmployee( json['CPF'], json['RG'], json['name'], 
+			json['work_on'], json['password'])
+
 		return jsonify(**resp)
 
 @app.route('/employee/get', methods=['POST'])
@@ -104,19 +107,41 @@ def getEmployee():
 
 	return jsonify(**resp)
 
+@app.route('/employee/delete', methods=['POST'])
+def delEmployee():
+	if request.json:
+		json = request.json
+		
+		resp = io.delEmployee(json['CPF'])
+
+		return jsonify(**resp)
+
+
 @app.route('/')
 def index():
 	return send_from_directory('views','gui.html')
 
+@app.route('/emp')
+def employee():
+	return send_from_directory('views','employee.html')
+
+@app.route('/del')
+def deleg():
+	return send_from_directory('views','delegation.html')
+
+@app.route('/sup')
+def supervisor():
+	return send_from_directory('views','supervisor.html')
 
 @app.route('/gui.css')
 def css():
 	return send_from_directory('static','gui.css')
 
 
-@app.route('/gui.js')
-def js():
-	return send_from_directory('static','gui.js')
+@app.route('/js/<name>')
+def js(name):
+	fname = '%s' % name
+	return send_from_directory('static',fname)
 
 
 if __name__ == "__main__":

@@ -1,16 +1,24 @@
 from pg import PostgresLayer
 
-MAX_EQUIP_NAME			= 20
-MAX_EQUIP_DESC			= 255
-MAX_EQUIP_OWNER			= 20
+MAX_EQUIP_NAME		= 20
+MAX_EQUIP_DESC		= 255
+MAX_EQUIP_OWNER		= 20
 
-MAX_DELEG_NAME			= 20
-MAX_DELEG_EMAIL			= 20
-MAX_DELEG_COUNTRY		= 3
-MAX_DELEG_TEL			= 20
+MAX_DELEG_NAME		= 20
+MAX_DELEG_EMAIL		= 20
+MAX_DELEG_COUNTRY	= 3
+MAX_DELEG_TEL		= 20
 
-MAX_FAC_NAME 			= 20
-MAX_FAC_ADDR			= 50
+MAX_FAC_NAME		= 20
+MAX_FAC_ADDR		= 50
+
+MAX_CPF 			= 10
+MAX_EMP_NAME 		= 20
+MAX_RG 				= 10
+MAX_PASS 			= 50
+
+MAX_LANG 			= 20
+
 
 class InOutLayer(object):
 
@@ -236,3 +244,53 @@ class InOutLayer(object):
 		resp = {'success': True}
 		resp['list'] = self.pg.selectAllEmployees()
 		return resp
+
+
+	def newEmployee(self, CPF, RG, name, work_on, password):
+		
+		#REQUIRED
+		if (not CPF) or (len(CPF) > MAX_CPF):
+			print("[io] Invalid CPF: empty or over"+MAX_CPF+".")
+			resp = {'success' : False, 'msg': 'CPF lenght invalid'}
+
+		elif (not RG) or (len(RG) > MAX_CPF):
+			print("[io] Invalid RG: empty or over "+MAX_CPF+".")
+			resp = {'success' : False, 'msg': 'RG lenght invalid'}
+
+		elif (not name) or (len(name) > MAX_EMP_NAME):
+			print("[io] Invalid Name: empty or over "+MAX_EMP_NAME+".")
+			resp = {'success' : False, 'msg': 'Name lenght invalid'}
+
+		elif (not work_on) or (len(work_on) > MAX_FAC_NAME):
+			print("[io] Invalid facility: empty or over "+MAX_FAC_NAME+".")
+			resp = {'success' : False, 'msg': 'Facility name lenght invalid'}
+
+		elif (not password) or (len(password) > MAX_PASS):
+			print("[io] Invalid password: empty or over "+MAX_PASS+".")
+			resp = {'success' : False, 'msg': 'Password lenght invalid'}
+
+
+		else:
+			resp = self.pg.insert("employee", CPF=CPF, RG=RG, 
+				civil_name=name, work_on=work_on, password=password)
+
+			if resp['success']:
+				print("[io] Employee hired!")
+
+			else:
+				print("[io] Failed to hire employee.")
+				resp['msg'] = "Employee already exist"
+
+		return resp
+
+	def delEmployee(self, CPF):
+
+		resp = self.pg.delete("employee", CPF = CPF)
+
+		if resp['success']:
+			print("[io] Employee deleted!")
+		else:
+			print("[io] Failed to delete employee. Wrong CPF?")
+			resp['msg'] = "Wrong CPF: '"+CPF+"'"
+
+		return resp;

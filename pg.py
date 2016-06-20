@@ -65,7 +65,7 @@ class PostgresLayer(object):
 		self.insert_req_args['employee_fluent'] = ['CPF', 'language']
 		self.insert_ret_args['employee_fluent'] = []
 		self.upsert_opt_args['employee_fluent'] = []
-		self.update_req_args['employee'] = ['CPF', 'language']
+		self.update_req_args['employee_fluent'] = ['CPF', 'language']
 
 		self.insert_req_args['supervisor'] = ['CPF']
 		self.insert_ret_args['supervisor'] = []
@@ -227,6 +227,7 @@ class PostgresLayer(object):
 		pgquery = "DELETE FROM " + table_target + " WHERE "
 
 		for field in update_req_args:
+			print(field)
 			if field in kwargs and kwargs[field]:
 				pgquery += field + " = '" + str(kwargs[field]) + "' and "
 			else: return {'success' : False, 'err': 'Missing input'}

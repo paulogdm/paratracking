@@ -1,0 +1,236 @@
+<html>
+<head>
+	<title> GUI Paratracking</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+	<link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.deep_orange-blue.min.css"/>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+
+	<!-- MY CSS AND JS -->
+	<script src="/js/employee.js"></script>
+	<link rel="stylesheet" href="/gui.css">
+
+</head>
+
+<!--  -->
+<body ng-app="flask-paratrack">
+	<main class="mdl-layout__content" ng-controller="MainController">
+		<div class="mdl-grid">
+			<div class="mini_card mdl-card mdl-cell mdl-shadow--4dp" style="text-align: center">
+				<div class="mdl-card__supporting-text">
+					<h2 class="mdl-color-text--blue">Paratracking </h2>
+					<br><br>
+					<a style="text-decoration: none; font-size: 150%"href="/del" title="Delegation page"> > Delegation Page</a>
+					<br><br>
+					<a style="text-decoration: none; font-size: 150%"href="/emp" title="Employee page"> > Employee Page</a>
+					<br><br>
+					<a style="text-decoration: none; font-size: 150%"href="/sup" title="Supervisor page"> > Supervisor Page</a>
+				</div>
+				<div class="mdl-layout-spacer"></div>
+				<div class="mdl-card__actions mdl-card--border">
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="refresh()">
+						REFRESH ALL
+					</a>
+				</div>
+			</div>
+			<div class="mini_card mdl-card mdl-cell mdl-shadow--4dp" style="text-align: center">
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">Register Package</span>
+				</div>
+				<div class="mdl-card__actions">
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="pkg_name" pattern="[ a-zA-Z0-9]+" ng-model="pkg_name">
+						<label class="mdl-textfield__label" for="pkg_name" maxlength="20">Name</label>
+						<span class="mdl-textfield__error">Letters and numbers only!</span>
+					</div>
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="pkg_owner" ng-model="pkg_owner" pattern="[ a-zA-Z0-9_]+">
+						<label class="mdl-textfield__label" for="pkg_owner" maxlength="20">Delegation owner</label>
+						<span class="mdl-textfield__error">Letters and numbers only!</span>
+					</div>
+					<div class="mdl-textfield mdl-js-textfield">
+						<textarea class="mdl-textfield__input" type="text" pattern="[ a-zA-Z0-9]+" rows= "4" maxlength="255" id="pkg_desc" ng-model="pkg_desc"></textarea>
+						<label class="mdl-textfield__label" for="pkg_desc">Package Description</label>
+					</div>
+				</div>
+				<div class="mdl-layout-spacer"></div>
+				<div class="mdl-card__actions mdl-card--border">
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="submitPkg()">
+					Save
+					</a>
+				</div>
+			</div>
+
+			<div class="mini_card mdl-card mdl-cell mdl-shadow--4dp" style="text-align: center">
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">Register Delegation</span>
+				</div>
+				<div class="mdl-card__actions">
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="deleg_country" pattern="[A-Z]+" ng-model="deleg_country">
+						<label class="mdl-textfield__label" for="deleg_country" maxlength="3">Country</label>
+						<span class="mdl-textfield__error">3 Uppercase letters please</span>
+					</div>
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="deleg_name" pattern="[ a-zA-Z0-9_]+" ng-value="deleg_country + '_'" ng-model="deleg_name">
+						<label class="mdl-textfield__label" for="deleg_name" maxlength="20">Delegation Name</label>
+						<span class="mdl-textfield__error">Letters and numbers only!</span>
+					</div>
+					
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="email" id="deleg_email" ng-model="deleg_email">
+						<label class="mdl-textfield__label" for="deleg_email" maxlength="20">Email (optional)</label>
+						<span class="mdl-textfield__error">Emails only!</span>
+					</div>
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="deleg_tel" ng-model="deleg_tel" pattern="[0-9A-Za-z -)(]+">
+						<label class="mdl-textfield__label" for="deleg_tel" maxlength="20">Phone number (optional)</label>
+						<span class="mdl-textfield__error">Phone numbers only!</span>
+					</div>
+				</div>
+				<div class="mdl-layout-spacer"></div>
+				<div class="mdl-card__actions mdl-card--border">
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="submitDeleg()">
+						Save
+					</a>
+				</div>
+			</div>
+			<div class="mini_card mdl-card mdl-cell mdl-shadow--4dp" style="text-align: center">
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">Register Employee Language</span>
+				</div>
+				<div class="mdl-card__actions">
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="emp_lang_CPF" pattern="[0-9]+" ng-model="emp_lang_CPF">
+						<label class="mdl-textfield__label" for="emp_lang_CPF" maxlength="10">CPF</label>
+						<span class="mdl-textfield__error">Numbers only!</span>
+					</div>
+
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="emp_lang" pattern="[-A-Z]+" ng-model="emp_lang">
+						<label class="mdl-textfield__label" for="emp_lang" maxlength="20">Language (PT-BR)</label>
+						<span class="mdl-textfield__error">Upper case letters only!</span>
+					</div>
+				</div>
+				<div class="mdl-layout-spacer"></div>
+				<div class="mdl-card__actions mdl-card--border">
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="submitLanguage()">
+						Save
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="mdl-grid">
+			<div class="mdl-card mdl-cell mdl-cell mdl-cell--10-col mdl-shadow--4dp" style="text-align: center">
+
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">All Packages</span>
+
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="getAllEquips()" style="float: left">
+						<i class="mdl-color-text--white material-icons mdl-list__item-icon">refresh</i>
+					</a>
+
+				</div>
+				
+
+
+				<div class="mdl-list" style="text-align: left">
+					<div class="mdl-card__actions mdl-card--border" ng-repeat="package in allPackages">
+						<li class="mdl-list__item mdl-list__item--three-line">
+							<span class="mdl-list__item-primary-content">
+								<i class="material-icons mdl-list__item-icon">local_mall</i>
+								<span>{{package.name}} - Owner: {{package.owner}}</span>
+								<span class="mdl-list__item-text-body">
+									{{package.description}}
+								</span>
+							</span>
+							<span class="mdl-list__item-secondary-content">
+								<button class="mdl-button mdl-js-button mdl-button--icon mdl-button--accent" ng-click="editablePackage($index)">
+									<i class="material-icons">edit</i>
+								</button>
+							</span>
+						</li>
+
+						<div class="mdl-card__actions mdl-card--border" ng-show="package.editable"></div>
+						<div class="mdl-card__actions">
+							<div class="mdl-textfield mdl-js-textfield" ng-show="package.editable">
+								<input class="mdl-textfield__input" type="text" id="update_pack_name" pattern="[ a-zA-Z0-9_]+" ng-model="update_pack_name">
+								<label class="mdl-textfield__label" for="update_pack_name" maxlength="20">New...</label>
+								<span class="mdl-textfield__error">Letters and numbers only!</span>
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+
+			<div class="mdl-card mdl-cell mdl-cell mdl-cell--10-col mdl-shadow--4dp" style="text-align: center">
+
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">All Delegations</span>
+
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="getAllDelegations()" style="float: left">
+						<i class="mdl-color-text--white material-icons mdl-list__item-icon">refresh</i>
+					</a>
+
+				</div>
+				
+				<div class="mdl-list" style="text-align: left">
+					<div class="mdl-card__actions mdl-card--border" ng-repeat="delegation in allDelegations">
+						<li class="mdl-list__item mdl-list__item--three-line">
+							<span class="mdl-list__item-primary-content">
+								<i class="material-icons mdl-list__item-icon">language</i>
+								<span>{{delegation.name}} - Country: {{delegation.country}}</span>
+								<span class="mdl-list__item-text-body">
+									Email: {{delegation.email ? delegation.email : "none"}}
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									Phone Number: {{delegation.tel ? delegation.tel : "none"}}
+								</span>
+							</span>
+						</li>
+					</div>
+				</div>
+			</div>
+
+			<div class="mdl-card mdl-cell mdl-cell mdl-cell--10-col mdl-shadow--4dp" style="text-align: center">
+
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">All Employees</span>
+
+					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="getAllDelegations()" style="float: left">
+						<i class="mdl-color-text--white material-icons mdl-list__item-icon">refresh</i>
+					</a>
+
+				</div>
+				
+				<div class="mdl-list" style="text-align: left">
+					<div class="mdl-card__actions mdl-card--border" ng-repeat="employee in allEmployees">
+						<li class="mdl-list__item mdl-list__item--three-line">
+							<span class="mdl-list__item-primary-content">
+								<i class="material-icons mdl-list__item-icon">{{employee.level ? "vpn_key" : "face"}}</i>
+								<span>{{employee.level ? "[SUPERVISOR "+employee.level+"] " : ""}}{{employee.name}} - CPF: {{employee.CPF}}</span>
+								<span class="mdl-list__item-text-body">
+									{{employee.is_active ? "Working...": "Not active"}}
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									RG: {{employee.RG}}
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									Working on facility: {{employee.work_on}}
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									Password: "******"
+								</span>
+							</span>
+						</li>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</main>
+	<div id="snackbar-show" class="mdl-js-snackbar mdl-snackbar" style="text-align: center;">
+		<div class="mdl-snackbar__text"></div>
+		<button class="mdl-snackbar__action" type="button"></button>
+	</div>
+</body>

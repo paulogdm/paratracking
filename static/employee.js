@@ -8,9 +8,9 @@ var GLOBAL_URL_GETDELEGS	= "/delegation/get";
 
 var GLOBAL_URL_NEWEMP		= "/employee/create"
 var GLOBAL_URL_GETEMP		= "/employee/get"
+var GLOBAL_URL_DELEMP 		="/employee/delete"
 
-var GLOBAL_URL_NEWFACILITY 	= "/facility/create";
-var GLOBAL_URL_NEWLANGUAGE	="/lanuage/create";
+var GLOBAL_URL_NEWLANGUAGE	="/language/create";
 
 ///////////
 //MDL JS //
@@ -54,10 +54,6 @@ angApp.factory('BackendService', function($http) {
 			return $http.post(GLOBAL_URL_DELDELEG, data);
 		},
 
-		'newFacility': function(data) {
-			return $http.post(GLOBAL_URL_NEWFACILITY, data);
-		},
-
 		'getAllEquips': function(data) {
 			return $http.post(GLOBAL_URL_GETEQUIPS, data);
 		},
@@ -68,6 +64,10 @@ angApp.factory('BackendService', function($http) {
 
 		'getAllEmployees': function(data) {
 			return $http.post(GLOBAL_URL_GETEMP, data);
+		},
+
+		'newEmployee': function(data) {
+			return $http.post(GLOBAL_URL_NEWEMP, data);
 		}
 	}
 });
@@ -75,57 +75,6 @@ angApp.factory('BackendService', function($http) {
 angApp.controller('MainController', ['$scope', 'BackendService', 
 	function($scope, BackendService) { 
 
-	BackendService.getAllEquips(null).then(
-		function(response) {
-			console.info(response);
-			if(response.data.success){
-				console.info("[getAllEquips] Success!");
-				console.info(response.data);
-				$scope.allPackages = response.data.list
-			} else {
-				console.info("[getAllEquips] Failed!");
-			}
-		},
-		function(response) {
-			showSnackbar("Server error. Contact the devs.");
-			console.info("[getAllEquips] Error received!");
-		}
-	);
-
-
-	BackendService.getAllDelegations(null).then(
-		function(response) {
-			console.info(response);
-			if(response.data.success){
-				console.info("[getAllDelegations] Success!");
-				console.info(response.data);
-				$scope.allDelegations = response.data.list
-			} else {
-				console.info("[getAllDelegations] Failed!");
-			}
-		},
-		function(response) {
-			showSnackbar("Server error. Contact the devs.");
-			console.info("[getAllDelegations] Error received!");
-		}
-		);
-	
-	BackendService.getAllEmployees(null).then(
-		function(response) {
-			console.info(response);
-			if(response.data.success){
-				console.info("[getAllEmployees] Success!");
-				console.info(response.data);
-				$scope.allEmployees = response.data.list
-			} else {
-				console.info("[getAllEmployees] Failed!");
-			}
-		},
-		function(response) {
-			showSnackbar("Server error. Contact the devs.");
-			console.info("[getAllEmployees] Error received!");
-		}
-		);
 
 	angular.isUndefinedOrNull = function(val) {
 		return angular.isUndefined(val) || val === null 
@@ -154,7 +103,7 @@ angApp.controller('MainController', ['$scope', 'BackendService',
 	$scope.delEquip = function(idx){
 		pkg = $scope.allPackages[idx];
 
-		if(pkg){
+		if(pkg && pkg.id){
 			data = {id: pkg.id};
 
 			BackendService.delEquip(data).then(
@@ -175,6 +124,8 @@ angApp.controller('MainController', ['$scope', 'BackendService',
 					console.info("[Newequip] Error received!");
 				}
 			);
+		} else {
+			showSnackbar("Please refresh the section before doing that.");
 		}
 	}
 
@@ -245,6 +196,16 @@ angApp.controller('MainController', ['$scope', 'BackendService',
 		);
 	}
 
+	$scope.editableEquip = function(idx){
+		pack = $scope.allPackages[idx];
+
+		if(!angular.isUndefinedOrNull(pack.editable))
+			if (pack.editable == false)
+				pack.editable = true;
+			else pack.editable = false;
+		else pack.editable = true;
+	}
+
 	$scope.submitPkg = function (){
 
 		if (
@@ -258,7 +219,8 @@ angApp.controller('MainController', ['$scope', 'BackendService',
 			var data = {
 				e_name: 		$scope.pkg_name,
 				owner: 			$scope.pkg_owner,
-				description: 	$scope.pkg_desc
+				description: 	$scope.pkg_desc,
+				name: 			$scope.pkg_name
 			}
 
 			BackendService.newEquip(data).then(
@@ -268,6 +230,9 @@ angApp.controller('MainController', ['$scope', 'BackendService',
 						console.info("[Newequip] Success!");
 						console.info(response.data);
 						showSnackbar("Equipment registered!");
+
+						$scope.allPackages.unshift(data);
+
 					} else {
 						console.info("[Newequip] Failed!");
 						showSnackbar(response.data.msg)
@@ -294,7 +259,8 @@ angApp.controller('MainController', ['$scope', 'BackendService',
 				d_name: 	$scope.deleg_name,
 				country: 	$scope.deleg_country,
 				email: 		$scope.deleg_email ? $scope.email : "",
-				tel: 		$scope.deleg_tel ? $scope.deleg_tel : ""
+				tel: 		$scope.deleg_tel ? $scope.deleg_tel : "",
+				name: 		$scope.deleg_name
 			}
 
 			BackendService.newDeleg(data).then(
@@ -304,43 +270,12 @@ angApp.controller('MainController', ['$scope', 'BackendService',
 						console.info("[Newdeleg] Success!");
 						console.info(response.data);
 						showSnackbar("Delegation created!");
+
+						$scope.allDelegations.unshift(data);
+
 					} else {
 						showSnackbar(response.data.msg)
 						console.info("[Newdeleg] Failed!");
-					}
-				},
-				function(response) {
-					showSnackbar("Server error. Contact the devs.");
-					console.info("[Newdeleg] Error received!");
-				}
-			);
-		}
-	}
-
-	$scope.submitFacility = function (){
-
-		if (
-			angular.isUndefinedOrNull($scope.facility_name)
-			){
-			showSnackbar("Missing field...");
-
-		} else {
-			var data = {
-				f_name: 	$scope.facility_name,
-				address: 	$scope.facility_address ? $scope.facility_address : "",
-				capacity:	$scope.facility_capacity ? $scope.facility_capacity : ""
-			}
-
-			BackendService.newFacility(data).then(
-				function(response) {
-					console.info(response);
-					if(response.data.success){
-						console.info("[NewFacility] Success!");
-						console.info(response.data);
-						showSnackbar("Facility created!");
-					} else {
-						showSnackbar(response.data.msg)
-						console.info("[NewFacility] Failed!");
 					}
 				},
 				function(response) {
@@ -386,6 +321,16 @@ angApp.controller('MainController', ['$scope', 'BackendService',
 			);
 		}
 	}
+
+	// STARTUP FUNCTIONS
+	
+	$scope.refresh = function() {
+		$scope.getAllEquips();
+		$scope.getAllDelegations();
+		$scope.getAllEmployees();
+	}
+
+	$scope.refresh();
 
 }]);
 
