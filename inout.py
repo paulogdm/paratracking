@@ -9,6 +9,9 @@ MAX_DELEG_EMAIL			= 20
 MAX_DELEG_COUNTRY		= 3
 MAX_DELEG_TEL			= 20
 
+MAX_FAC_NAME 			= 20
+MAX_FAC_ADDR			= 50
+
 class InOutLayer(object):
 
 	def __init__(self, dbname, host, user, password, debug=False):
@@ -64,11 +67,23 @@ class InOutLayer(object):
 
 
 	def delEquip(self, id):
-		self.pg.delete("equipment", e_id = id)
+
+		resp = self.pg.delete("equipment", e_id = id)
+
+		if resp['success']:
+			print("[io] Equipment deleted!")
+		else:
+			print("[io] Failed to delete equipment. Wrong id?")
+
+		return resp;
 
 	def selectEquip(self, id):
-		self.pg.select("equipment", e_id = id)
+		return self.pg.select("equipment", e_id = id)
 
+	def selectAllEquips(self):
+		resp = {'success': True}
+		resp['list'] = self.pg.selectAllEquips()
+		return resp
 
 	#####################################
 
@@ -133,7 +148,91 @@ class InOutLayer(object):
 		return resp
 
 	def delDeleg(self, name):
-		self.pg.delete("delegation", d_name = name)
+		resp = self.pg.delete("delegation", d_name = name)
+
+		if resp['success']:
+			print("[io] Equipment deleted!")
+		else:
+			print("[io] Failed to delete equipment. Wrong name?")
+
+		return resp;
 
 	def selectDeleg(self, name):
 		self.pg.select("delegation", d_name = name)
+	
+	def selectAllDelegs(self):
+		resp = {'success': True}
+		resp['list'] = self.pg.selectAllDelegs()
+		return resp
+
+	############################
+	def newFacility(self, name, address="", capacity=""):
+		if (not name) or (len(name) > MAX_FAC_NAME):
+			print("[io] Invalid facility name: empty or over"+MAX_FAC_NAME+".")
+			resp = {'success' : False, 'msg': 'Name lenght invalid'}
+
+		elif (address) and (len(address) > MAX_FAC_ADDR):
+			print("[io] Invalid facility address: empty or over "+MAX_FAC_ADDR+".")
+			resp = {'success' : False, 'msg': 'Address lenght invalid'}
+
+		else:
+			resp = self.pg.insert("facility", f_name=name, address=address, capacity=capacity)
+
+			if resp['success']:
+				print("[io] New facility created!")
+			else:
+				print("[io] Failed to insert new facility.")
+				resp['msg'] = "Name taken."
+
+		return resp
+
+	def setFacility(self, name, address="", capacity=""):
+		if (not name) or (len(name) > MAX_FAC_NAME):
+			print("[io] Invalid facility name: empty or over"+MAX_FAC_NAME+".")
+			resp = {'success' : False, 'msg': 'Name lenght invalid'}
+
+		elif (address) and (len(address) > MAX_FAC_ADDR):
+			print("[io] Invalid facility address: empty or over "+MAX_FAC_ADDR+".")
+			resp = {'success' : False, 'msg': 'Address lenght invalid'}
+
+		else:
+			resp = self.pg.update("facility", f_name=name, address=address, capacity=capacity)
+
+			if resp['success']:
+				print("[io] Facility updated!")
+			else:
+				print("[io] Failed to insert new facility.")
+				resp['msg'] = "Name taken."
+
+		return resp
+
+	###################
+
+	def newLang(self, CPF, language):
+		
+		#REQUIRED
+		if (not CPF) or (len(CPF) > MAX_CPF):
+			print("[io] Invalid CPF: empty or over"+MAX_CPF+".")
+			resp = {'success' : False, 'msg': 'CPF lenght invalid'}
+
+		elif (not language) or (len(language) > MAX_LANGUAGE):
+			print("[io] Invalid delegation language: empty or over "+MAX_LANGUAGE+".")
+			resp = {'success' : False, 'msg': 'Language lenght invalid'}
+
+		else:
+			resp = self.pg.insert("employee_fluent", CPF=CPF, language=language)
+
+			if resp['success']:
+				print("[io] New language created!")
+			else:
+				print("[io] Failed to insert new language.")
+				resp['msg'] = "Relation already exist"
+
+		return resp
+
+	###################
+	
+	def selectAllEmployess(self):
+		resp = {'success': True}
+		resp['list'] = self.pg.selectAllEmployees()
+		return resp

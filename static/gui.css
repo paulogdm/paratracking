@@ -19,6 +19,10 @@ html, body {
 	max-width: 400px;
 }
 
+.card_container {
+	
+}
+
 .noselect {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
