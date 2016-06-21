@@ -159,8 +159,9 @@ class PostgresLayer(object):
 		for field in insert_req_args:
 			if field in kwargs and kwargs[field]:
 				pgquery += field + ","
-				values += "'" + kwargs[field] + "',"
+				values += "'" + str(kwargs[field]) + "',"
 			else:
+				print("Required: '"+field+"' but not provided")
 				return {'success' : False, 'err': 'Missing input'}
 
 		for field in upsert_opt_args:
@@ -190,7 +191,7 @@ class PostgresLayer(object):
 		upsert_opt_args = self.upsert_opt_args[table_target]
 		update_req_args = self.update_req_args[table_target]
 
-		if not table_target or not upsert_opt_args:
+		if not table_target or not update_req_args:
 			return {'success': False, 'err': 'Table doesnt exist'}
 		
 		pgquery = "UPDATE "+table_target+ " SET "
@@ -202,6 +203,7 @@ class PostgresLayer(object):
 		for field in upsert_opt_args:
 			if field in kwargs and kwargs[field]:
 				pgquery += field + " = '" + str(kwargs[field]) + "',"
+				
 
 		pgquery = pgquery[:-1] + " WHERE "
 
@@ -245,14 +247,16 @@ class PostgresLayer(object):
 	#################################################
 
 	def selectAllEquips(self):
-		pgquery = "SELECT * FROM equipment ORDER BY e_id asc;"
+		pgquery =  "SELECT equipment.*, local_of_equip.local FROM equipment "
+		pgquery += "LEFT OUTER JOIN local_of_equip on local_of_equip.e_id = equipment.e_id "
+		pgquery += "ORDER BY equipment.e_id asc;"
 
 		if self.DEBUG_MODE:
 			print(pgquery)
 		
 		self.cursor.execute(pgquery)
 
-		columns = ('id', 'name', 'description', 'owner')
+		columns = ('id', 'name', 'description', 'owner', 'local')	
 		results = []
 
 		for row in self.fetchall():
@@ -294,3 +298,42 @@ class PostgresLayer(object):
 
 		return results
 
+	def searchTranslator(self, language):
+		pgquery =  "SELECT employee_fluent.language, employee.*, level from employee "
+		pgquery += "inner join employee_fluent on employee.CPF = employee_fluent.CPF "
+
+		if language != "": 
+			pgquery += "and language % '"+language+"' "
+
+		pgquery += "left outer join supervisor on employee.CPF = supervisor.CPF;"
+
+		if self.DEBUG_MODE:
+			print(pgquery)
+		
+		self.cursor.execute(pgquery)
+		
+		columns = ('language', 'CPF', 'RG', 'name', 'work_on', 'password', 'is_active', 'level')
+		results = []
+
+		for row in self.fetchall():
+			results.append(dict(zip(columns, row)))
+
+		return results
+
+
+	def selectAllFacilities(self):
+		
+		pgquery = "SELECT * from facility;"
+		
+		if self.DEBUG_MODE:
+			print(pgquery)
+		
+		self.cursor.execute(pgquery)
+		
+		columns = ('name', 'address', 'capacity')
+		results = []
+
+		for row in self.fetchall():
+			results.append(dict(zip(columns, row)))
+
+		return results

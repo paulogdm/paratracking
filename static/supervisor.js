@@ -2,6 +2,8 @@ var GLOBAL_URL_NEWEQUIP 	= "/equipment/create";
 var GLOBAL_URL_DELEQUIP		= "/equipment/delete";
 var GLOBAL_URL_GETEQUIPS	= "/equipment/get";
 
+var GLOBAL_URL_UPEQUIP		= "/equipment/update"
+
 var GLOBAL_URL_NEWDELEG 	= "/delegation/create";
 var GLOBAL_URL_DELDELEG 	= "/delegation/delete";
 var GLOBAL_URL_GETDELEGS	= "/delegation/get";
@@ -10,8 +12,14 @@ var GLOBAL_URL_NEWEMP		= "/employee/create"
 var GLOBAL_URL_GETEMP		= "/employee/get"
 var GLOBAL_URL_DELEMP 		="/employee/delete"
 
+var GLOBAL_URL_GETFACILITY	= "/facility/get"
 var GLOBAL_URL_NEWFACILITY 	= "/facility/create";
+var GLOBAL_URL_DELFACILITY 	= "/facility/del";
+
 var GLOBAL_URL_NEWLANGUAGE	="/language/create";
+
+var GLOBAL_URL_NEWREQUEST 	= "/request/create";
+
 
 ///////////
 //MDL JS //
@@ -26,6 +34,24 @@ function showSnackbar(msg){
 	notification.MaterialSnackbar.showSnackbar(data); 
 } 
 
+/////////////////////
+// DATE VALIDATION //
+/////////////////////
+
+function validDate(text) {
+	var comp = text.split('/');
+
+	if (comp.length !== 3) {
+		return false;
+	}
+
+	var d = parseInt(comp[0], 10);
+	var m = parseInt(comp[1], 10);
+	var y = parseInt(comp[2], 10);
+	var date = new Date(y, m - 1, d);
+	return (date.getFullYear() == y && date.getMonth() + 1 == m && 
+		date.getDate() == d);
+}
 
 ////////////
 //ANGULAR //
@@ -58,6 +84,14 @@ angApp.factory('BackendService', function($http) {
 		'newFacility': function(data) {
 			return $http.post(GLOBAL_URL_NEWFACILITY, data);
 		},
+		
+		'getAllFacilities': function(data) {
+			return $http.post(GLOBAL_URL_GETFACILITY, data);
+		},
+
+		'delFacility': function(data){
+			return $http.post(GLOBAL_URL_DELFACILITY, data);
+		},
 
 		'getAllEquips': function(data) {
 			return $http.post(GLOBAL_URL_GETEQUIPS, data);
@@ -77,6 +111,14 @@ angApp.factory('BackendService', function($http) {
 
 		'delEmployee': function(data) {
 			return $http.post(GLOBAL_URL_DELEMP, data);
+		},
+
+		'upEquip': function(data) {
+			return $http.post(GLOBAL_URL_UPEQUIP, data);
+		},
+
+		'newRequest': function(data){
+			return $http.post(GLOBAL_URL_NEWREQUEST, data);
 		}
 	}
 });
@@ -437,12 +479,160 @@ angApp.controller('MainController', ['$scope', 'BackendService',
 		}
 	}
 
+	$scope.editableEquip = function(idx){
+		pack = $scope.allPackages[idx];
+
+		if(!angular.isUndefinedOrNull(pack.editable))
+			if (pack.editable == false)
+				pack.editable = true;
+			else pack.editable = false;
+		else pack.editable = true;
+	}
+
+	$scope.equipNameSubmit = function(idx){
+
+		pack = $scope.allPackages[idx];
+
+		console.info(pack.update_pack_name)
+
+		var data = {
+			id: 	pack.id,
+			name: 	pack.update_pack_name ? pack.update_pack_name : ""
+		}
+
+		BackendService.upEquip(data).then(
+			function(response) {
+				console.info(response);
+				if(response.data.success){
+					console.info("[NewName] Success!");
+					console.info(response.data);
+					showSnackbar("Request created!");
+					pack.name = pack.update_pack_name;
+					pack.update_pack_name = "";
+					pack.editable = false;
+				} else {
+					showSnackbar(response.data.msg)
+					console.info("[NewName] Failed!");
+				}
+			},
+			function(response) {
+				showSnackbar("Server error. Contact the devs.");
+				console.info("[NewName] Error received!");
+			}
+		);
+	}
+
+	$scope.requestEquip = function(idx){
+		pack = $scope.allPackages[idx];
+
+		if(!angular.isUndefinedOrNull(pack.requesting))
+			if (pack.requesting == false)
+				pack.requesting = true;
+			else pack.requesting = false;
+		else pack.requesting = true;
+	}
+
+	$scope.requestEquipSubmit = function(idx){
+		pack = $scope.allPackages[idx];
+
+		if(angular.isUndefinedOrNull(pack.local_in) 	||
+			angular.isUndefinedOrNull(pack.local_out) 	||
+			angular.isUndefinedOrNull(pack.date_in) 	||
+			angular.isUndefinedOrNull(pack.date_out) 
+		){
+			showSnackbar("Missing field...")
+		} else {
+
+			if(!validDate(pack.date_in) || !validDate(pack.date_out)){
+				
+				showSnackbar("Invalid date. Format: dd/mm/aaaa");
+
+			} else {
+
+				var data = {
+					id: 		pack.id,
+					local_in: 	pack.local_in,
+					local_out: 	pack.local_out,
+					date_in: 	pack.date_in,
+					date_out: 	pack.date_out
+				}
+
+				BackendService.newRequest(data).then(
+					function(response) {
+						console.info(response);
+						if(response.data.success){
+							console.info("[NewRequest] Success!");
+							console.info(response.data);
+							showSnackbar("Request created!");
+							pack.requesting = false;
+							pack.local_in = "";
+							pack.local_out = "";
+							pack.date_in = "";
+							pack.date_out = "";
+						} else {
+							showSnackbar(response.data.msg)
+							console.info("[NewRequest] Failed!");
+						}
+					},
+					function(response) {
+						showSnackbar("Server error. Contact the devs.");
+						console.info("[NewRequest] Error received!");
+					}
+				);
+			}
+		}
+	}
+
+	$scope.getAllFacilities = function(){
+		BackendService.getAllFacilities(null).then(
+		function(response) {
+			console.info(response);
+			if(response.data.success){
+				console.info("[getAllFacilities] Success!");
+				console.info(response.data);
+				$scope.allFacilities = response.data.list
+			} else {
+				console.info("[getAllFacilities] Failed!");
+			}
+		},
+		function(response) {
+			showSnackbar("Server error. Contact the devs.");
+			console.info("[getAllFacilities] Error received!");
+		}
+		);
+	}
+
+	$scope.delFacility = function(idx){
+
+		fac = $scope.allFacilities[idx]
+
+		var data = {name: fac.name}
+
+		BackendService.delFacility(data).then(
+		function(response) {
+			console.info(response);
+			if(response.data.success){
+				console.info("[delFacility] Success!");
+				console.info(response.data);
+				$scope.allFacilities.splice(idx, 1)
+			} else {
+				console.info("[delFacility] Failed!");
+			}
+		},
+		function(response) {
+			showSnackbar("Server error. Contact the devs.");
+			console.info("[delFacility] Error received!");
+		}
+		);
+	}
+
 	// STARTUP FUNCTIONS
 	
 	$scope.refresh = function() {
 		$scope.getAllEquips();
 		$scope.getAllDelegations();
 		$scope.getAllEmployees();
+		$scope.getAllFacilities();
 	}
 
 	$scope.refresh();

@@ -129,3 +129,5 @@ CREATE TABLE service(
 	CONSTRAINT FK_SERVICE_EMP foreign key (employee)
 		REFERENCES employee (CPF) ON DELETE CASCADE
 );
+
+CREATE EXTENSION pg_trgm;

@@ -128,14 +128,10 @@
 
 				<div class="mdl-card__supporting-text">
 					<span style="font-size: 200%">All Packages</span>
-
 					<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="getAllEquips()" style="float: left">
 						<i class="mdl-color-text--white material-icons mdl-list__item-icon">refresh</i>
 					</a>
-
 				</div>
-				
-
 
 				<div class="mdl-list" style="text-align: left">
 					<div class="mdl-card__actions mdl-card--border" ng-repeat="package in allPackages">
@@ -145,24 +141,60 @@
 								<span>{{package.name}} - Owner: {{package.owner}}</span>
 								<span class="mdl-list__item-text-body">
 									{{package.description}}
+									<br>
+										<b>
+											Local: {{package.local}}
+										</b>
+									</br>
 								</span>
 							</span>
 							<span class="mdl-list__item-secondary-content">
-								<button class="mdl-button mdl-js-button mdl-button--icon mdl-button--accent" ng-click="editablePackage($index)">
+								<button class="mdl-button mdl-js-button mdl-button--icon mdl-button--accent" ng-click="editableEquip($index)">
 									<i class="material-icons">edit</i>
 								</button>
+								<button class="mdl-button mdl-js-button mdl-button--icon mdl-button--accent" ng-click="requestEquip($index)">
+									<i class="material-icons">local_shipping</i>
+								</button>
 							</span>
+
 						</li>
 
-						<div class="mdl-card__actions mdl-card--border" ng-show="package.editable"></div>
-						<div class="mdl-card__actions">
+						<div class="mdl-card__actions mdl-card--border" ng-show="package.editable">
 							<div class="mdl-textfield mdl-js-textfield" ng-show="package.editable">
-								<input class="mdl-textfield__input" type="text" id="update_pack_name" pattern="[ a-zA-Z0-9_]+" ng-model="update_pack_name">
-								<label class="mdl-textfield__label" for="update_pack_name" maxlength="20">New...</label>
+								<input class="mdl-textfield__input" type="text" id="update_pack_name" pattern="[ a-zA-Z0-9_]+" ng-model="package.update_pack_name">
+								<label class="mdl-textfield__label" for="update_pack_name" maxlength="20">New name...</label>
 								<span class="mdl-textfield__error">Letters and numbers only!</span>
 							</div>
+							<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" style="float: right" ng-click="equipNameSubmit($index)">
+								Save
+							</a>
 						</div>
-
+						
+						<div class="mdl-card__actions mdl-card--border" ng-show="package.requesting">
+							<div class="mdl-textfield mdl-js-textfield" >
+								<input class="mdl-textfield__input" type="text" id="local_in" pattern="[ a-zA-Z0-9_]+" ng-model="package.local_in">
+								<label class="mdl-textfield__label" for="local_in" maxlength="20">Origin</label>
+								<span class="mdl-textfield__error">Letters and numbers only!</span>
+							</div>
+							<div class="mdl-textfield mdl-js-textfield" >
+								<input class="mdl-textfield__input" type="text" id="local_out" pattern="[ a-zA-Z0-9_]+" ng-model="package.local_out">
+								<label class="mdl-textfield__label" for="local_out" maxlength="20">Destination</label>
+								<span class="mdl-textfield__error">Letters and numbers only!</span>
+							</div>
+							<div class="mdl-textfield mdl-js-textfield" >
+								<input class="mdl-textfield__input" type="text" id="date_in" pattern="\d{1,2}/\d{1,2}/\d{4}" ng-model="package.date_in">
+								<label class="mdl-textfield__label" for="date_in" maxlength="20">Date to pull (dd/mm/aaaa)</label>
+								<span class="mdl-textfield__error">Date only!</span>
+							</div>
+							<div class="mdl-textfield mdl-js-textfield" >
+								<input class="mdl-textfield__input" type="text" id="date_out" pattern="\d{1,2}/\d{1,2}/\d{4}" ng-model="package.date_out">
+								<label class="mdl-textfield__label" for="date_out" maxlength="20">Date to push (dd/mm/aaaa)</label>
+								<span class="mdl-textfield__error">Date only!</span>
+							</div>
+							<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" style="float: right" ng-click="requestEquipSubmit($index)">
+								Save
+							</a>
+						</div>
 					</div>
 				</div>
 			</div>

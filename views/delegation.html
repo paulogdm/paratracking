@@ -103,6 +103,58 @@
 
 		<div class="mdl-grid">
 			<div class="mdl-card mdl-cell mdl-cell mdl-cell--10-col mdl-shadow--4dp" style="text-align: center">
+				
+				<div class="mdl-card__supporting-text">
+					<span style="font-size: 200%">Search for translators</span>
+				</div>
+
+				<div class="mdl-card__actions mdl-card--border" style="float: left">
+					<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+						<input class="mdl-textfield__input" type="text" id="language" ng-model="translator_lang">
+						<label class="mdl-textfield__label" for="language">Language</label>
+					</div>
+					<button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="getTranslator()">
+						<i class="mdl-color-text--white material-icons mdl-list__item-icon">send</i>
+					</button>
+				</div>
+
+				<div class="mdl-card__supporting-text" ng-show="translators_flag">
+					<span style="font-size: 200%">Result translators</span>
+					
+					<button class="mdl-button mdl-js-button mdl-button--icon" ng-click="closeTranslators()" style="float: right" ng-show="translators_flag">
+						<i class="mdl-color-text-primary material-icons mdl-list__item-icon">close</i>
+					</button>
+
+				</div>
+				
+				<div ng-show="allTranslators == {}">
+					<span>Nothing to show!</span>
+				</div>
+
+				<div class="mdl-list" style="text-align: left" ng-show="allTranslators != {}">
+					<div class="mdl-card__actions mdl-card--border" ng-repeat="employee in allTranslators">
+						<li class="mdl-list__item mdl-list__item--three-line">
+							<span class="mdl-list__item-primary-content">
+								<i class="material-icons mdl-list__item-icon">{{employee.level ? "vpn_key" : "face"}}</i>
+								<span>{{employee.level ? "[SUPERVISOR "+employee.level+"] " : ""}}{{employee.name}} - CPF: {{employee.CPF}}</span>
+								<span class="mdl-list__item-text-body">
+									{{employee.is_active ? "Working...": "Not active"}}
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									RG: {{employee.RG}}
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									Working on facility: {{employee.work_on}}
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<b>
+									Language: {{employee.language.toString()}}
+									</b>
+								</span>
+							</span>
+						</li>
+					</div>
+				</div>
+			</div>
+
+			<div class="mdl-card mdl-cell mdl-cell mdl-cell--10-col mdl-shadow--4dp" style="text-align: center">
 
 				<div class="mdl-card__supporting-text">
 					<span style="font-size: 200%">All Packages</span>
@@ -121,12 +173,18 @@
 								<span>{{package.name}} - Owner: {{package.owner}}</span>
 								<span class="mdl-list__item-text-body">
 									{{package.description}}
+									<br>
+										<b>
+											Local: {{package.local}}
+										</b>
+									</br>
 								</span>
 							</span>
 						</li>
 					</div>
 				</div>
 			</div>
+
 
 			<div class="mdl-card mdl-cell mdl-cell mdl-cell--10-col mdl-shadow--4dp" style="text-align: center">
 

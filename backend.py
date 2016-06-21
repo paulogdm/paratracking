@@ -27,6 +27,15 @@ def getEquip():
 
 	return jsonify(**resp)
 
+@app.route('/equipment/update', methods=['POST'])
+def upEquip():
+
+	if request.json:
+		json = request.json
+		resp = io.setEquip( json['id'], name=json['name'])
+
+		return jsonify(**resp)
+
 @app.route('/delegation/get', methods=['POST'])
 def getDeleg():
 	
@@ -66,6 +75,13 @@ def newDeleg():
 
 		return jsonify(**resp)
 
+@app.route('/facility/get', methods=['POST'])
+def getFacility():
+	
+	resp = io.selectAllFacilities()
+
+	return jsonify(**resp)
+
 @app.route('/facility/create', methods=['POST'])
 def newFacility():
 	if request.json:
@@ -82,12 +98,30 @@ def newFacility():
 		resp = io.newFacility( json['f_name'], address, capacity)
 		return jsonify(**resp)
 
+@app.route('/facility/del', methods=['POST'])
+def delFacility():
+	if request.json:
+		json = request.json
+
+		resp = io.delFacility( json['name'])
+		
+		return jsonify(**resp)
+
 @app.route('/language/create', methods=['POST'])
 def newLanguage():
 	if request.json:
 		json = request.json
 
 		resp = io.newLang( json['CPF'], json['language'])
+
+		return jsonify(**resp)
+
+@app.route('/translator/get', methods=['POST'])
+def getTranslator():
+	if request.json:
+		json = request.json
+
+		resp = io.getTranslator( json['language'])
 
 		return jsonify(**resp)
 
@@ -116,6 +150,18 @@ def delEmployee():
 
 		return jsonify(**resp)
 
+
+@app.route('/request/create', methods=['POST'])
+def newRequest():
+	if request.json:
+		json = request.json
+
+		resp = io.newRequest(json['id'], json['local_in'], json['local_out'], 
+			json['date_in'], json['date_out'])
+
+		return jsonify(**resp)
+
+#################
 
 @app.route('/')
 def index():

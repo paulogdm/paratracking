@@ -48,21 +48,23 @@ class InOutLayer(object):
 				print("[io] New equipment created!")
 			else:
 				print("[io] Failed to insert new equipment.")
-				resp['msg'] = "Owner doest exist"
+				resp['msg'] = "Owner doesnt exist"
 
 		return resp
-
 
 	def setEquip(self, id, name="", description="", owner=""):
 
 		if (name) and (len(name) > MAX_EQUIP_NAME):
 			print("[io] Invalid equip name: empty or over"+MAX_EQUIP_NAME+".")
+			resp = {'success' : False, 'msg': 'Name lenght invalid'}
 
 		elif (description) and (len(description) > MAX_EQUIP_DESC):
 			print("[io] Invalid equip description: empty or over "+MAX_EQUIP_DESC+".")
+			resp = {'success' : False, 'msg': 'Description lenght invalid'}
 
 		elif (owner) and (len(owner) > MAX_EQUIP_OWNER):
 			print("[io] Invalid equipment owner: empty or over "+MAX_EQUIP_OWNER+".")
+			resp = {'success' : False, 'msg': 'Owner lenght invalid'}
 
 		else:
 			resp = self.pg.update("equipment", e_id = id, e_name = name, 
@@ -72,7 +74,9 @@ class InOutLayer(object):
 				print("[io] Equipment updated!")
 			else:
 				print("[io] Failed to update equipment. Wrong id?")
-
+				resp['msg'] = "Failed."
+		print(resp)
+		return resp
 
 	def delEquip(self, id):
 
@@ -214,7 +218,47 @@ class InOutLayer(object):
 
 		return resp
 
+	def selectAllFacilities(self):
+		resp = {'success': True}
+		resp['list'] = self.pg.selectAllFacilities()
+		return resp
+
+	def delFacility(self, name):
+
+		resp = self.pg.delete("facility", f_name = name.strip())
+
+		if resp['success']:
+			print("[io] Facility deleted!")
+		else:
+			print("[io] Failed to delete facility. FK")
+			resp['msg'] = "You can't delete the facility if it holds equipment"
+
+		return resp;
+
 	###################
+
+	def getTranslator(self, language):
+
+		if (language) and (len(language) > MAX_LANG):
+			print("[io] Invalid language: empty or over "+MAX_LANG+".")
+			resp = {'success' : False, 'msg': 'Language lenght invalid'}
+
+		else:
+			if language:
+				language = language.upper()
+			else: language = ""
+
+			resp = {'success': True}
+			resp['list'] = self.pg.searchTranslator(language)
+
+			if resp['success']:
+				print("[io] Translator returned!")
+
+			else:
+				print("[io] Failed to search for translator.")
+				resp['msg'] = "Search failed..."
+
+		return resp
 
 	def newLang(self, CPF, language):
 		
@@ -223,11 +267,15 @@ class InOutLayer(object):
 			print("[io] Invalid CPF: empty or over"+MAX_CPF+".")
 			resp = {'success' : False, 'msg': 'CPF lenght invalid'}
 
-		elif (not language) or (len(language) > MAX_LANGUAGE):
-			print("[io] Invalid delegation language: empty or over "+MAX_LANGUAGE+".")
+		elif (not language) or (len(language) > MAX_LANG):
+			print("[io] Invalid language: empty or over "+MAX_LANG+".")
 			resp = {'success' : False, 'msg': 'Language lenght invalid'}
 
+
 		else:
+			
+			language = language.upper()
+
 			resp = self.pg.insert("employee_fluent", CPF=CPF, language=language)
 
 			if resp['success']:
@@ -294,3 +342,16 @@ class InOutLayer(object):
 			resp['msg'] = "Wrong CPF: '"+CPF+"'"
 
 		return resp;
+
+	def newRequest(self, id, local_in, local_out, date_in, date_out):
+		
+		resp = self.pg.insert("request", e_id = id, local_in = local_in, 
+			local_out = local_out, date_in = date_in, date_out = date_out)
+
+		if resp['success']:
+			print("[io] New request created!")
+		else:
+			print("[io] Failed to insert request.")
+			resp['msg'] = "Facility Origin name and/or destination invalid."
+
+		return resp

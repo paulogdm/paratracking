@@ -6,6 +6,8 @@ var GLOBAL_URL_NEWDELEG 	= "/delegation/create";
 var GLOBAL_URL_DELDELEG 	= "/delegation/delete";
 var GLOBAL_URL_GETDELEGS	= "/delegation/get";
 
+var GLOBAL_URL_TRANSLATOR	="/translator/get";
+
 function showSnackbar(msg){ 
 	var notification = document.querySelector('#snackbar-show'); 
 	var data = { 
@@ -46,6 +48,10 @@ angApp.factory('BackendService', function($http) {
 
 		'getAllDelegations': function(data) {
 			return $http.post(GLOBAL_URL_GETDELEGS, data);
+		},
+
+		'getTranslator': function(data) {
+			return $http.post(GLOBAL_URL_TRANSLATOR, data);
 		}
 	}
 });
@@ -253,6 +259,59 @@ angApp.controller('MainController', ['$scope', 'BackendService',
 				pack.editable = true;
 			else pack.editable = false;
 		else pack.editable = true;
+	}
+
+	$scope.closeTranslators = function(){
+		$scope.translators_flag = false;
+		$scope.allTranslators = {}
+	}
+
+	$scope.getTranslator = function(){
+
+		var data = {
+			language: $scope.translator_lang ? $scope.translator_lang : ""
+		}
+
+		BackendService.getTranslator(data).then(
+			function(response) {
+				console.info(response);
+				if(response.data.success){
+					console.info("[Translator] Success!");
+					console.info(response.data);
+					$scope.translators_flag = true;
+
+					var array = [];
+					var flag = false;
+
+					for (var i = 0; i < response.data.list.length; i++) {
+						flag = false;
+						for (var j = 0; j < array.length; j++) {
+							if(array[j].name == response.data.list[i].name){
+								array[j].language += response.data.list[i].language
+								flag = true;
+								break;
+							}
+						}
+						if(!flag){
+							var new_emp = response.data.list[i];
+							var lang = new_emp.language;
+							new_emp.language = [lang];
+							array.push(new_emp);1
+						}
+					}
+
+					$scope.allTranslators = array;
+
+				} else {
+					showSnackbar(response.data.msg)
+					console.info("[Translator] Failed!");
+				}
+			},
+			function(response) {
+				showSnackbar("Server error. Contact the devs.");
+				console.info("[Translator] Error received!");
+			}
+		);
 	}
 
 
