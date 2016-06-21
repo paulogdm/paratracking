@@ -1,5 +1,6 @@
 from pg import PostgresLayer
 
+#DEFINE				= LENGHTS
 MAX_EQUIP_NAME		= 20
 MAX_EQUIP_DESC		= 255
 MAX_EQUIP_OWNER		= 20
@@ -21,13 +22,27 @@ MAX_LANG 			= 20
 
 
 class InOutLayer(object):
-
+	
+	# Constructor
+	# > Args: 	dbname (required) => name of database created BEFORE
+	# 			host (required) => IP (Default port 5432) // localhost if youre
+	# 				running postgres on this machine
+	# 			user (required) => Your pg user // check your permission
+	# 			password (required) => String
+	# 			DEBUG_MODE (optional) => True if you want explicit query prints
+	# 				
 	def __init__(self, dbname, host, user, password, debug=False):
 		self.pg = PostgresLayer(dbname, host, user, password, debug)
 
 	def __del__(self):
 		del self.pg
 
+	# New Equip
+	# > Args: 	name (required) => Equip name
+	# 			description (required) => Equip descrip
+	# 			owner (required) => Delegation name
+	# 			DEBUG_MODE (optional) => True if you want explicit query prints
+	# 				
 	def newEquip(self, name, description, owner):
 		if (not name) or (len(name) > MAX_EQUIP_NAME):
 			print("[io] Invalid equip name: empty or over"+MAX_EQUIP_NAME+".")
@@ -41,7 +56,7 @@ class InOutLayer(object):
 			print("[io] Invalid equipment owner: empty or over "+MAX_EQUIP_OWNER+".")
 			resp = {'success' : False, 'msg': 'Owner lenght invalid'}
 
-		else:
+		else: #remember the kwargs?
 			resp = self.pg.insert("equipment", e_name=name, description=description, owner=owner)
 
 			if resp['success']:
@@ -52,6 +67,12 @@ class InOutLayer(object):
 
 		return resp
 
+	# update equip
+	# > Args: 	id (required) => key of equip
+	# 			name => optional arg
+	# 			description => optional arg
+	# 			owner => optional arg
+	# 				
 	def setEquip(self, id, name="", description="", owner=""):
 
 		if (name) and (len(name) > MAX_EQUIP_NAME):
@@ -75,9 +96,10 @@ class InOutLayer(object):
 			else:
 				print("[io] Failed to update equipment. Wrong id?")
 				resp['msg'] = "Failed."
-		print(resp)
 		return resp
 
+	# Delete Equipment
+	# > Args: 	id (required) => id of equip
 	def delEquip(self, id):
 
 		resp = self.pg.delete("equipment", e_id = id)
@@ -89,16 +111,25 @@ class InOutLayer(object):
 
 		return resp;
 
+	# Select ONE Equipment
+	# > Args: 	id (required) => id of equip
 	def selectEquip(self, id):
 		return self.pg.select("equipment", e_id = id)
 
+	# Select ALL Equipments
 	def selectAllEquips(self):
 		resp = {'success': True}
 		resp['list'] = self.pg.selectAllEquips()
 		return resp
 
 	#####################################
-
+	# 		DELEGATION FUNCTIONS		#
+	#####################################
+	
+	# New Delegation
+	# > Args: 	name (required) => name of delegation
+	# 			country (required) => country of delegation
+	# 			email (opt) => email of delegation
 	def newDeleg(self, name, country, email="", tel=""):
 
 		#REQUIRED
@@ -130,7 +161,11 @@ class InOutLayer(object):
 
 		return resp
 
-
+	# New Delegation
+	# > Args: 	name (required) => name of delegation
+	# 			country (opt) => country of delegation
+	# 			email (opt) => email of delegation
+	# 			tel (opt) => tel of delegation
 	def setDeleg(self, name, country="", email="", tel=""):
 		if (name) and (len(name) > MAX_DELEG_NAME):
 			print("[io] Invalid delegation name: empty or over"+MAX_DELEG_NAME+".")
@@ -159,6 +194,8 @@ class InOutLayer(object):
 
 		return resp
 
+	# Delete Delegation
+	# > Args: 	name (required) => name of delegation
 	def delDeleg(self, name):
 		resp = self.pg.delete("delegation", d_name = name)
 
@@ -169,15 +206,26 @@ class InOutLayer(object):
 
 		return resp;
 
+	# Select ONE Delegation
+	# > Args: 	name (required) => name of delegation
 	def selectDeleg(self, name):
 		self.pg.select("delegation", d_name = name)
 	
+	# Select ALL Delegation
 	def selectAllDelegs(self):
 		resp = {'success': True}
 		resp['list'] = self.pg.selectAllDelegs()
 		return resp
 
-	############################
+	
+	#############################
+	# 	FACILITY FUNCTIONS 		#
+	#############################
+	
+	# New Facility
+	# > Args: 	name (required) => name of facility
+	# 			address (opt) => address
+	# 			capacity (opt) => capacity
 	def newFacility(self, name, address="", capacity=""):
 		if (not name) or (len(name) > MAX_FAC_NAME):
 			print("[io] Invalid facility name: empty or over"+MAX_FAC_NAME+".")
@@ -198,6 +246,11 @@ class InOutLayer(object):
 
 		return resp
 
+
+	# New Facility
+	# > Args: 	name (required) => name of facility
+	# 			address (opt) => address
+	# 			capacity (opt) => capacity
 	def setFacility(self, name, address="", capacity=""):
 		if (not name) or (len(name) > MAX_FAC_NAME):
 			print("[io] Invalid facility name: empty or over"+MAX_FAC_NAME+".")
@@ -218,11 +271,16 @@ class InOutLayer(object):
 
 		return resp
 
+
+	# All Facilities
 	def selectAllFacilities(self):
 		resp = {'success': True}
 		resp['list'] = self.pg.selectAllFacilities()
 		return resp
 
+
+	# Delete Facility
+	# > Args: 	name (required) => name of facility
 	def delFacility(self, name):
 
 		resp = self.pg.delete("facility", f_name = name.strip())
@@ -236,7 +294,12 @@ class InOutLayer(object):
 		return resp;
 
 	###################
+	###################
+	###################
 
+
+	# Get employees that translate one language
+	# > Args: 	language (required) => language
 	def getTranslator(self, language):
 
 		if (language) and (len(language) > MAX_LANG):
@@ -260,6 +323,10 @@ class InOutLayer(object):
 
 		return resp
 
+
+	# New Employee Fluent in
+	# > Args: 	CPF (required) => CPF of employee
+	# 			language (required) => new language
 	def newLang(self, CPF, language):
 		
 		#REQUIRED
@@ -287,13 +354,23 @@ class InOutLayer(object):
 		return resp
 
 	###################
+	###################
+	###################
 	
+
+	# Get All Employees
 	def selectAllEmployess(self):
 		resp = {'success': True}
 		resp['list'] = self.pg.selectAllEmployees()
 		return resp
 
 
+	# New Employee
+	# > Args: 	CPF (required)
+	# 			RG (required)
+	# 			name (required)
+	# 			work_on (required) => facility name to work
+	# 			password (required)
 	def newEmployee(self, CPF, RG, name, work_on, password):
 		
 		#REQUIRED
@@ -331,6 +408,8 @@ class InOutLayer(object):
 
 		return resp
 
+	# Delete Employee
+	# > Args: 	CPF (required)
 	def delEmployee(self, CPF):
 
 		resp = self.pg.delete("employee", CPF = CPF)
@@ -343,6 +422,13 @@ class InOutLayer(object):
 
 		return resp;
 
+
+	# New Request
+	# > Args: 	id (required) => id of equipment
+	# 			local_in (required) => name of facility
+	# 			local_out (required) => name of facility
+	# 			date_in (required) => date
+	# 			date_out (required) => date
 	def newRequest(self, id, local_in, local_out, date_in, date_out):
 		
 		resp = self.pg.insert("request", e_id = id, local_in = local_in, 

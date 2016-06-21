@@ -144,18 +144,26 @@ class PostgresLayer(object):
 	#				GENERIC DB FUNCTIONS			#
 	#################################################
 	
+	# Generic insert.
+	# > Args: 	table_target (required) => Table to insert
+	# 			kwargs => any args. Check dictionarys for required
+	# 			and optional fields.
+	# < Return:	dict{succes: BOOL, err: POSTGRE ERR CODE IF ERR}
 	def insert(self, table_target,**kwargs):
 
+		#consulting dictionarys for args
 		insert_req_args = self.insert_req_args[table_target]
 		insert_ret_args = self.insert_ret_args[table_target]
 		upsert_opt_args = self.upsert_opt_args[table_target]
 
+		# table not located in dictionary
 		if not table_target or not insert_req_args:
 			return {'success': False, 'err': 'Table doesnt exist'}
 
 		pgquery = "INSERT INTO "+table_target+ " ("
 		values = " ("
 
+		# for each required field, check if provided
 		for field in insert_req_args:
 			if field in kwargs and kwargs[field]:
 				pgquery += field + ","
@@ -164,19 +172,23 @@ class PostgresLayer(object):
 				print("Required: '"+field+"' but not provided")
 				return {'success' : False, 'err': 'Missing input'}
 
+		# for each optional field, check if provided
 		for field in upsert_opt_args:
 			if field in kwargs and kwargs[field]:
 				pgquery += field + ","
 				values += "'" + str(kwargs[field]) + "',"
 
+		# clean the strings
 		pgquery = pgquery[:-1] + ") "
 		values = values[:-1] + ") "
 
 		pgquery = pgquery + " VALUES " + values + ";"
 
+		# debug mode = show me what youre doing
 		if self.DEBUG_MODE:
 			print(pgquery)
 
+		# exec transaction
 		resp = self.exec(pgquery);
 	
 		if self.DEBUG_MODE:
@@ -184,27 +196,37 @@ class PostgresLayer(object):
 
 		return resp
 
+	# Generic update.
+	# > Args: 	table_target (required) => Table to insert
+	# 			kwargs => any args. Check dictionarys for required
+	# 			and optional fields.
+	# < Return:	dict{succes: BOOL, err: POSTGRE ERR CODE IF ERR}
 	def update(self, table_target, **kwargs):
 
+		# dictionarys
 		insert_req_args = self.insert_req_args[table_target]
 		insert_ret_args = self.insert_ret_args[table_target]
 		upsert_opt_args = self.upsert_opt_args[table_target]
 		update_req_args = self.update_req_args[table_target]
 
+		# table doesnt exist
 		if not table_target or not update_req_args:
 			return {'success': False, 'err': 'Table doesnt exist'}
 		
 		pgquery = "UPDATE "+table_target+ " SET "
 		
+		# for each field, check if arg provided
 		for field in insert_req_args:
 			if field in kwargs and kwargs[field]:
 				pgquery += field + " = '" + str(kwargs[field]) + "',"
 
+		# for each field, check if arg provided
 		for field in upsert_opt_args:
 			if field in kwargs and kwargs[field]:
 				pgquery += field + " = '" + str(kwargs[field]) + "',"
 				
 
+		# cleaning string
 		pgquery = pgquery[:-1] + " WHERE "
 
 		for field in update_req_args:
@@ -219,15 +241,23 @@ class PostgresLayer(object):
 
 		return self.exec(pgquery);
 
+	# Generic delete.
+	# > Args: 	table_target (required) => Table to delete row
+	# 			kwargs => any args. Check dictionarys for required
+	# 			and optional fields.
+	# < Return:	dict{succes: BOOL, err: POSTGRE ERR CODE IF ERR}
 	def delete(self, table_target, **kwargs):
 
+		#key arg required
 		update_req_args = self.update_req_args[table_target]
 
+		#if table not located
 		if not table_target or not update_req_args:
 			return {'success': False, 'err': 'Table doesnt exist'}
 		
 		pgquery = "DELETE FROM " + table_target + " WHERE "
 
+		#if key not provided
 		for field in update_req_args:
 			print(field)
 			if field in kwargs and kwargs[field]:
@@ -246,6 +276,7 @@ class PostgresLayer(object):
 	#				SPECIFIC DB FUNCTIONS			#
 	#################################################
 
+	# Function to select and return all equips
 	def selectAllEquips(self):
 		pgquery =  "SELECT equipment.*, local_of_equip.local FROM equipment "
 		pgquery += "LEFT OUTER JOIN local_of_equip on local_of_equip.e_id = equipment.e_id "
@@ -256,14 +287,17 @@ class PostgresLayer(object):
 		
 		self.cursor.execute(pgquery)
 
+		# columns to generate dict
 		columns = ('id', 'name', 'description', 'owner', 'local')	
 		results = []
 
+		# generating dict
 		for row in self.fetchall():
 			results.append(dict(zip(columns, row)))
 
 		return results
 
+	# select all delegations
 	def selectAllDelegs(self):
 		pgquery = "SELECT * FROM delegation ORDER BY d_name asc;"
 
@@ -272,14 +306,17 @@ class PostgresLayer(object):
 		
 		self.cursor.execute(pgquery)
 		
+		# columns to generate dict
 		columns = ('name', 'country', 'email', 'tel')
 		results = []
 
+		# generating dict
 		for row in self.fetchall():
 			results.append(dict(zip(columns, row)))
 
 		return results
 
+	# function to return all employees with languages
 	def selectAllEmployees(self):
 		pgquery =  "SELECT employee.*, supervisor.level FROM employee "
 		pgquery += "LEFT OUTER JOIN supervisor on employee.CPF = supervisor.CPF "
@@ -290,18 +327,23 @@ class PostgresLayer(object):
 		
 		self.cursor.execute(pgquery)
 		
+		# array to dict
 		columns = ('CPF', 'RG', 'name', 'work_on', 'password', 'is_active', 'level')
 		results = []
 
+		# generating dict
 		for row in self.fetchall():
 			results.append(dict(zip(columns, row)))
 
 		return results
 
+	# Search with fuzzy search for employee that speaks LANGUAGE
 	def searchTranslator(self, language):
 		pgquery =  "SELECT employee_fluent.language, employee.*, level from employee "
-		pgquery += "inner join employee_fluent on employee.CPF = employee_fluent.CPF "
+		pgquery += "INNER JOIN employee_fluent on employee.CPF = employee_fluent.CPF "
 
+		# fuzzy search here
+		# if arg, do fuzzy, if not, select all
 		if language != "": 
 			pgquery += "and language % '"+language+"' "
 
@@ -312,15 +354,18 @@ class PostgresLayer(object):
 		
 		self.cursor.execute(pgquery)
 		
+		#array to generate dict
 		columns = ('language', 'CPF', 'RG', 'name', 'work_on', 'password', 'is_active', 'level')
 		results = []
 
+		#generating dict
 		for row in self.fetchall():
 			results.append(dict(zip(columns, row)))
 
 		return results
 
 
+	#return all facilities
 	def selectAllFacilities(self):
 		
 		pgquery = "SELECT * from facility;"
